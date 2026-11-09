@@ -115,7 +115,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 
   <section id="res" aria-live="polite" style="display:flex;flex-direction:column;gap:16px"></section>
   <button class="all" id="todos" type="button" hidden>Ver todos los horarios</button>
-  <p class="note">Los feriados se eligen a mano: tocá "Dom · Fer". Horarios de paso por cada localidad según la grilla coordinada.</p>
+  <p class="note">El tipo de día se detecta solo (hábil, sábado, domingo o feriado nacional). Podés cambiarlo a mano. Horarios de paso por cada localidad según la grilla coordinada.</p>
 </main>
 
 <script>
@@ -397,12 +397,15 @@ const stops = D.ida;
 let day = 'H', emp = '*', showAll = false;
 
 function nowBA(){
-  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:TZ,weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).map(x=>[x.type,x.value]));
-  return {wd:p.weekday, hm:p.hour.replace('24','00')+':'+p.minute};
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:TZ,weekday:'short',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return {wd:p.weekday, hm:p.hour.replace('24','00')+':'+p.minute, ymd:p.year+'-'+p.month+'-'+p.day};
 }
 function setDay(d){ if(d!==day) {} day=d; $('dH').setAttribute('aria-pressed',d==='H'); $('dS').setAttribute('aria-pressed',d==='S'); $('dD').setAttribute('aria-pressed',d==='D'); render(); }
 let live=true;
-function useNow(){ live=true; const n=nowBA(); setH(n.hm); day=n.wd==='Sat'?'S':n.wd==='Sun'?'D':'H'; setDay(day); $('livetxt').textContent='Con la hora de ahora ('+n.hm+'). Se actualiza sola.'; }
+const HOL={
+'2026-01-01':'Año Nuevo','2026-02-16':'Carnaval','2026-02-17':'Carnaval','2026-03-24':'Día de la Memoria','2026-04-02':'Día del Veterano de Malvinas','2026-04-03':'Viernes Santo','2026-05-01':'Día del Trabajador','2026-05-25':'Revolución de Mayo','2026-06-15':'Paso a la Inmortalidad de Güemes','2026-07-09':'Día de la Independencia','2026-08-17':'Paso a la Inmortalidad de San Martín','2026-10-12':'Diversidad Cultural','2026-11-09':'Visita del Papa','2026-11-10':'Visita del Papa (Córdoba)','2026-11-23':'Día de la Soberanía Nacional','2026-12-08':'Inmaculada Concepción','2026-12-25':'Navidad',
+'2027-01-01':'Año Nuevo','2027-02-08':'Carnaval','2027-02-09':'Carnaval','2027-03-24':'Día de la Memoria','2027-03-26':'Viernes Santo','2027-04-02':'Día del Veterano de Malvinas','2027-05-25':'Revolución de Mayo','2027-06-21':'Paso a la Inmortalidad de Güemes','2027-07-09':'Día de la Independencia','2027-08-16':'Paso a la Inmortalidad de San Martín','2027-10-11':'Diversidad Cultural','2027-12-08':'Inmaculada Concepción','2027-12-25':'Navidad'};
+function useNow(){ live=true; const n=nowBA(), fer=HOL[n.ymd]; setH(n.hm); day=(fer||n.wd==='Sun')?'D':n.wd==='Sat'?'S':'H'; setDay(day); $('livetxt').textContent='Con la fecha y hora de ahora ('+n.hm+'): '+(fer?'feriado, '+fer:n.wd==='Sun'?'domingo':n.wd==='Sat'?'sábado':'día hábil')+'. Se actualiza sola.'; }
 setInterval(()=>{ if(live) useNow(); },30000);
 
 for(let i=0;i<24;i++){const o=document.createElement('option');o.value=o.textContent=String(i).padStart(2,'0');$('hh').appendChild(o);}
@@ -451,7 +454,8 @@ function render(){
 $('orig').onchange=$('dest').onchange=render;
 $('hh').onchange=$('mm').onchange=()=>{ live=false; $('livetxt').textContent='Hora elegida a mano. Tocá "Próximo ya" para volver a la hora de ahora.'; render(); };
 $('swap').onclick=()=>{const a=$('orig').value;$('orig').value=$('dest').value;$('dest').value=a;render();};
-$('dH').onclick=()=>setDay('H'); $('dS').onclick=()=>setDay('S'); $('dD').onclick=()=>setDay('D');
+const manual=d=>()=>{ live=false; $('livetxt').textContent='Tipo de día elegido a mano. Tocá "Próximo ya" para volver a la fecha y hora de ahora.'; setDay(d); };
+$('dH').onclick=manual('H'); $('dS').onclick=manual('S'); $('dD').onclick=manual('D');
 $('ahora').onclick=useNow;
 const F={f0:'*',fI:'INTER',fF:'FONO',fM:'MI BUS'};
 for (const id in F) $(id).onclick=()=>{ emp=F[id]; for (const k in F) $(k).setAttribute('aria-pressed',k===id); render(); };
