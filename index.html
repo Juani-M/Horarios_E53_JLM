@@ -40,10 +40,18 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 .route{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
 .swap{font:inherit;font-size:20px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;height:46px;width:46px;cursor:pointer}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
-.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:1 1 220px}
-.seg button{flex:1;font:inherit;font-size:15px;font-weight:600;padding:10px 8px;background:var(--bg);color:var(--fg);border:0;cursor:pointer}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{flex:1;font:inherit;font-size:13px;font-weight:600;padding:5px 6px;background:var(--bg);color:var(--fg);border:0;cursor:pointer}
 .seg button[aria-pressed=true]{background:var(--ink);color:var(--ink-fg)}
-.time{flex:0 1 150px}
+.time{flex:0 1 170px}
+.hm{display:flex;align-items:center;gap:4px}
+#f0{background:var(--ink);color:var(--ink-fg)}
+.seg.emp button{color:#fff}
+#f0{color:var(--ink-fg)}
+#fI{background:var(--inter)}#fF{background:var(--fono)}#fM{background:var(--mibus)}
+.seg.emp button[aria-pressed=false]{opacity:.7}
+.route select{font-size:15px}
+.seg.emp button[aria-pressed=true]{box-shadow:inset 0 0 0 3px rgba(255,255,255,.75)}
 .link{font:inherit;font-size:13px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px 0;text-align:left}
 .next{border-left:6px solid var(--accent);background:var(--ink);color:var(--ink-fg);border-radius:10px;padding:18px 16px;display:flex;flex-direction:column;gap:6px}
 .next .lbl{color:inherit;opacity:.75}
@@ -90,11 +98,11 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
           <button type="button" id="dD" aria-pressed="false">Dom · Fer</button>
         </div>
       </div>
-      <div class="field time"><label for="hora">Salir desde las</label><input type="time" id="hora"></div>
+      <div class="field time"><span class="lbl">Salir desde las (24 h)</span><div class="hm"><select id="hh" aria-label="Hora"></select><span>:</span><select id="mm" aria-label="Minutos"></select></div></div>
     </div>
     <div class="field">
       <span class="lbl">Empresa</span>
-      <div class="seg" role="group" aria-label="Empresa">
+      <div class="seg emp" role="group" aria-label="Empresa">
         <button type="button" id="f0" aria-pressed="true">Todas</button>
         <button type="button" id="fI" aria-pressed="false">Inter</button>
         <button type="button" id="fF" aria-pressed="false">Fono</button>
@@ -394,9 +402,12 @@ function nowBA(){
 }
 function setDay(d){ if(d!==day) {} day=d; $('dH').setAttribute('aria-pressed',d==='H'); $('dS').setAttribute('aria-pressed',d==='S'); $('dD').setAttribute('aria-pressed',d==='D'); render(); }
 let live=true;
-function useNow(){ live=true; const n=nowBA(); $('hora').value=n.hm; day=n.wd==='Sat'?'S':n.wd==='Sun'?'D':'H'; setDay(day); $('livetxt').textContent='Con la hora de ahora ('+n.hm+'). Se actualiza sola.'; }
+function useNow(){ live=true; const n=nowBA(); setH(n.hm); day=n.wd==='Sat'?'S':n.wd==='Sun'?'D':'H'; setDay(day); $('livetxt').textContent='Con la hora de ahora ('+n.hm+'). Se actualiza sola.'; }
 setInterval(()=>{ if(live) useNow(); },30000);
 
+for(let i=0;i<24;i++){const o=document.createElement('option');o.value=o.textContent=String(i).padStart(2,'0');$('hh').appendChild(o);}
+for(let i=0;i<60;i++){const o=document.createElement('option');o.value=o.textContent=String(i).padStart(2,'0');$('mm').appendChild(o);}
+const getH=()=>$('hh').value+':'+$('mm').value, setH=v=>{$('hh').value=v.slice(0,2);$('mm').value=v.slice(3,5);};
 for (const s of stops){ for (const id of ['orig','dest']){ const o=document.createElement('option'); o.value=s; o.textContent=nice(s); $(id).appendChild(o); } }
 $('orig').value='AGUA DE ORO'; $('dest').value='CORDOBA';
 
@@ -416,7 +427,7 @@ function render(){
   const all0 = services(o,d), all = emp==='*' ? all0 : all0.filter(s=>s.e===emp);
   $('todos').hidden = !all.length;
   if (!all.length){ res.innerHTML='<div class="panel"><p class="empty">'+(all0.length ? 'Esa empresa no tiene servicios entre estas dos localidades en este tipo de día.' : 'Ningún servicio une estas dos localidades en este tipo de día.')+'</p></div>'; return; }
-  const h = $('hora').value || '00:00', t0 = mins(h);
+  const h = getH(), t0 = mins(h);
   let list = all.filter(s => mins(s.dep) >= t0), wrapped = false;
   if (!list.length){ list = all; wrapped = true; }
   const n = list[0], wait = mins(n.dep)-t0;
@@ -438,7 +449,7 @@ function render(){
 }
 
 $('orig').onchange=$('dest').onchange=render;
-$('hora').oninput=()=>{ live=false; $('livetxt').textContent='Hora elegida a mano. Tocá "Próximo ya" para volver a la hora de ahora.'; render(); };
+$('hh').onchange=$('mm').onchange=()=>{ live=false; $('livetxt').textContent='Hora elegida a mano. Tocá "Próximo ya" para volver a la hora de ahora.'; render(); };
 $('swap').onclick=()=>{const a=$('orig').value;$('orig').value=$('dest').value;$('dest').value=a;render();};
 $('dH').onclick=()=>setDay('H'); $('dS').onclick=()=>setDay('S'); $('dD').onclick=()=>setDay('D');
 $('ahora').onclick=useNow;
