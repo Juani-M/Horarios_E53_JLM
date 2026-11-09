@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light}body{margin:0}[hidden]{display:none!important}</style><title>Horarios E-53</title>
+<meta name="description" content="Consultá el próximo servicio según tu origen, destino y día.">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Horarios E-53">
+<meta property="og:description" content="Consultá el próximo servicio según tu origen, destino y día.">
+<meta property="og:url" content="https://horarios-e53-cba.vercel.app/">
+<meta property="og:image" content="https://horarios-e53-cba.vercel.app/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://horarios-e53-cba.vercel.app/og.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600;700&display=swap">
+<style>
+:root{
+  --bg:#efefef; --surface:#ffffff; --fg:#1a1a1a; --muted:#666666; --line:#d4d4d4;
+  --ink:#1a1a1a; --ink-fg:#ffffff; --accent:#9b1b1b;
+  --go:#f5b800; --inter:#c00000; --fono:#00a651; --mibus:#e6007e;
+  --font-body:'Barlow',system-ui,sans-serif; --font-num:'Barlow Semi Condensed','Barlow',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121212; --surface:#1e1e1e; --fg:#ececec; --muted:#a0a0a0; --line:#363636;
+  --ink:#ececec; --ink-fg:#121212; --accent:#e05a5a; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#121212; --surface:#1e1e1e; --fg:#ececec; --muted:#a0a0a0; --line:#363636;
+  --ink:#ececec; --ink-fg:#121212; --accent:#e05a5a; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:16px;line-height:1.4;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+h1{font-family:var(--font-num);font-size:26px;font-weight:700;margin:0;letter-spacing:.01em;color:var(--accent)}
+.sub{color:var(--muted);font-size:14px;margin:2px 0 0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:12px}
+label,.lbl{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+select,input[type=time]{font:inherit;font-size:17px;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px 10px;width:100%;min-width:0}
+select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.route{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.swap{font:inherit;font-size:20px;background:var(--bg);color:var(--fg);border:1px solid var(--line);border-radius:8px;height:46px;width:46px;cursor:pointer}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex:1 1 220px}
+.seg button{flex:1;font:inherit;font-size:15px;font-weight:600;padding:10px 8px;background:var(--bg);color:var(--fg);border:0;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--ink);color:var(--ink-fg)}
+.time{flex:0 1 150px}
+.link{font:inherit;font-size:13px;background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;padding:4px 0;text-align:left}
+.next{border-left:6px solid var(--accent);background:var(--ink);color:var(--ink-fg);border-radius:10px;padding:18px 16px;display:flex;flex-direction:column;gap:6px}
+.next .lbl{color:inherit;opacity:.75}
+.big{font-family:var(--font-num);font-weight:700;font-size:64px;line-height:1;font-variant-numeric:tabular-nums}
+.meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;font-size:16px}
+.chip{display:inline-block;font-weight:700;font-size:15px;padding:4px 10px;border-radius:6px;color:#fff;letter-spacing:.03em}
+.chip.INTER{background:var(--inter)}.chip.FONO{background:var(--fono)}.chip.MIBUS{background:var(--mibus)}
+.next .chip{outline:2px solid rgba(255,255,255,.55)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .next .chip{outline-color:rgba(0,0,0,.35)}}
+:root[data-theme="dark"] .next .chip{outline-color:rgba(0,0,0,.35)}
+.list{display:flex;flex-direction:column}
+.item{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .t{font-family:var(--font-num);font-weight:600;font-size:24px;font-variant-numeric:tabular-nums}
+.item .a{color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.empty{color:var(--muted);padding:6px 0}
+.go{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;font:inherit;font-family:var(--font-num);font-size:22px;font-weight:700;letter-spacing:.02em;background:var(--go);color:#1a1400;border:0;border-radius:10px;padding:14px 16px;cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.go:active{transform:translateY(1px);box-shadow:none}
+.go svg{width:34px;height:34px;flex:none}
+.note{color:var(--muted);font-size:13px}
+.item.past{opacity:.4}
+.all{font:inherit;font-size:16px;font-weight:600;width:100%;padding:12px;background:var(--surface);color:var(--fg);border:2px solid var(--ink);border-radius:10px;cursor:pointer}
+</style>
+
+</head><body>
+<main>
+  <header>
+    <h1>Horarios E-53</h1>
+    <p class="sub">Córdoba – Río Ceballos – Jesús María · Intercórdoba, Fono Bus y Mi Bus · vigencia 02/11/2026</p>
+  </header>
+
+  <section class="panel" aria-label="Consulta">
+    <div class="route">
+      <div class="field"><label for="orig">Origen</label><select id="orig"></select></div>
+      <button class="swap" id="swap" type="button" aria-label="Invertir origen y destino">⇄</button>
+      <div class="field"><label for="dest">Destino</label><select id="dest"></select></div>
+    </div>
+    <div class="row">
+      <div class="field" style="flex:1 1 220px">
+        <span class="lbl">Tipo de día</span>
+        <div class="seg" role="group" aria-label="Tipo de día">
+          <button type="button" id="dH" aria-pressed="true">Hábil</button>
+          <button type="button" id="dS" aria-pressed="false">Sábado</button>
+          <button type="button" id="dD" aria-pressed="false">Dom · Fer</button>
+        </div>
+      </div>
+      <div class="field time"><label for="hora">Salir desde las</label><input type="time" id="hora"></div>
+    </div>
+    <div class="field">
+      <span class="lbl">Empresa</span>
+      <div class="seg" role="group" aria-label="Empresa">
+        <button type="button" id="f0" aria-pressed="true">Todas</button>
+        <button type="button" id="fI" aria-pressed="false">Inter</button>
+        <button type="button" id="fF" aria-pressed="false">Fono</button>
+        <button type="button" id="fM" aria-pressed="false">Mi Bus</button>
+      </div>
+    </div>
+    <button class="go" id="ahora" type="button"><svg viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="24" height="21" rx="4"/><path d="M4 14h24M9 19h2M21 19h2M8 24v3M24 24v3"/><rect x="8" y="6.5" width="16" height="5" rx="1"/></svg><span>Próximo ya</span></button>
+    <span class="note" id="livetxt"></span>
+  </section>
+
+  <section id="res" aria-live="polite" style="display:flex;flex-direction:column;gap:16px"></section>
+  <button class="all" id="todos" type="button" hidden>Ver todos los horarios</button>
+  <p class="note">Los feriados se eligen a mano: tocá "Dom · Fer". Horarios de paso por cada localidad según la grilla coordinada.</p>
+</main>
+
+<script>
+const P=s=>s.trim().split('\n').map(l=>{const [e,d,t]=l.split('|');return {e,d,t:t.split(',').map(x=>x==='-'?null:x)}});
+const D={ida:'CORDOBA|RIO CEBALLOS|LA QUEBRADA|SALSIPUEDES|EL PUEBLITO|CERRO AZUL|AGUA DE ORO|LA GRANJA|ASCOCHINGA|LA PAMPA|JESUS MARIA'.split('|'),vuelta:'JESUS MARIA|LA PAMPA|ASCOCHINGA|LA GRANJA|AGUA DE ORO|CERRO AZUL|EL PUEBLITO|SALSIPUEDES|LA QUEBRADA|RIO CEBALLOS|CORDOBA'.split('|'),
+H:{ida:P(`
+INTER|L a V|-,05:45,-,06:05,06:15,-,06:25,-,-,-,-
+INTER|L a V|-,-,-,06:10,06:20,-,06:30,06:55,07:05,-,07:30
+FONO|L a V|05:20,06:25,-,06:45,06:55,-,07:05,-,-,-,-
+INTER|L a V|-,-,-,06:50,07:00,-,07:10,07:25,-,-,-
+INTER|L a V|05:40,06:40,-,06:55,07:05,-,07:15,07:30,-,-,-
+FONO|L a V|-,-,-,07:00,07:10,-,07:20,07:35,07:50,08:00,08:20
+INTER|L a V|-,-,-,-,-,07:50,08:10,-,-,-,-
+FONO|L a V|06:20,07:25,-,07:45,07:55,-,08:05,-,-,-,-
+FONO|L a V|06:40,07:45,-,08:05,08:15,-,08:25,-,-,-,-
+INTER|L a V|07:00,08:00,-,08:15,08:20,-,08:30,08:35,08:55,09:05,09:30
+FONO|L a V|07:20,08:25,-,08:45,08:55,-,09:05,-,-,-,-
+MI BUS|L a V|07:40,-,-,08:40,-,-,08:55,09:10,-,-,-
+INTER|L a V|07:40,08:45,-,09:05,09:15,-,09:20,-,-,-,-
+FONO|L a V|-,-,-,-,-,-,09:30,09:45,10:00,10:10,10:30
+FONO|L a V|08:00,09:05,-,09:25,09:35,-,09:45,-,-,-,-
+FONO|L a V|08:15,09:20,-,09:40,09:50,-,10:00,-,-,-,-
+INTER|L a V|08:30,09:35,-,09:55,10:05,-,10:10,-,-,-,-
+FONO|L a V|08:45,09:50,-,10:10,10:20,-,10:30,10:45,11:15,-,-
+INTER|L a V|09:00,10:05,-,10:25,10:35,-,10:40,10:55,11:05,11:15,11:40
+FONO|L a V|09:20,10:25,-,10:45,10:55,-,11:05,-,-,-,-
+INTER|L a V|09:40,10:45,-,11:05,11:15,-,11:20,-,-,-,-
+FONO|L a V|10:00,11:05,-,11:25,11:35,-,11:45,-,-,-,-
+FONO|L a V|-,-,-,-,-,-,12:00,12:15,12:25,12:35,13:00
+FONO|L a V|10:20,11:25,-,11:45,11:55,-,12:05,-,-,-,-
+INTER|L a V|10:40,11:45,-,12:05,12:15,-,12:20,12:35,-,-,-
+MI BUS|L a V|10:45,-,-,11:45,-,-,12:00,12:15,12:45,-,-
+FONO|L a V|11:00,12:05,-,12:25,12:35,-,12:45,-,-,-,-
+INTER|L a V|11:15,12:20,-,12:40,12:50,-,12:55,-,-,-,-
+FONO|L a V|-,-,-,-,-,-,13:00,13:15,13:25,13:35,14:00
+FONO|L a V|11:30,12:35,-,12:55,13:05,-,13:15,-,-,-,-
+INTER|L a V|11:45,12:50,-,13:10,13:20,-,13:25,13:40,13:50,14:00,14:25
+INTER|L a V|-,-,-,-,-,13:30,13:40,-,-,-,-
+FONO|L a V|12:00,13:05,-,13:25,13:35,-,13:45,-,-,-,-
+MI BUS|L a V|12:20,-,-,13:20,-,-,13:35,13:50,-,-,-
+INTER|L a V|12:20,13:25,-,13:45,13:55,-,14:00,-,-,-,-
+FONO|L a V|-,-,-,-,-,-,14:10,14:25,14:35,14:45,15:10
+FONO|L a V|12:40,13:45,-,14:05,14:15,-,14:25,-,-,-,-
+INTER|L a V|12:50,-,-,13:55,14:05,-,14:15,14:30,-,-,-
+FONO|L a V|13:00,14:05,-,14:25,14:35,-,14:45,-,-,-,-
+INTER|L a V|13:20,14:25,-,14:45,14:55,-,15:00,-,-,-,-
+FONO|L a V|-,-,-,-,-,-,15:10,-,-,-,-
+FONO|L a V|13:40,14:45,-,15:05,15:15,-,15:25,15:25,15:35,15:45,16:10
+FONO|L a V|13:55,15:00,-,15:20,15:30,-,15:40,-,-,-,-
+MI BUS|L a V|14:10,-,-,15:10,-,-,15:25,15:40,-,-,-
+INTER|L a V|14:15,15:20,-,15:35,-,-,-,-,-,-,-
+FONO|L a V|-,-,-,-,-,-,16:10,16:25,16:35,16:45,17:10
+FONO|L a V|14:30,15:35,-,15:55,16:05,-,16:15,-,-,-,-
+INTER|L a V|14:45,15:50,-,16:10,16:20,-,16:25,-,-,-,-
+MI BUS|L a V|15:00,-,-,16:00,-,-,16:15,16:30,-,-,-
+FONO|L a V|15:00,16:05,-,16:25,16:35,-,16:45,-,-,-,-
+INTER|L a V|15:20,16:25,-,16:45,16:55,-,17:00,-,-,-,-
+FONO|L a V|15:40,16:45,-,17:05,17:15,-,17:25,-,-,-,-
+INTER|L a V|15:55,17:00,-,17:20,17:30,-,17:35,17:40,-,-,-
+MI BUS|L a V|16:10,-,-,17:10,-,-,17:25,17:55,18:05,18:15,18:40
+FONO|L a V|-,-,-,-,-,-,17:40,-,-,-,-
+INTER|L a V|16:15,17:20,-,17:40,17:50,-,17:55,-,-,-,-
+FONO|L a V|16:30,17:35,-,17:55,18:05,-,18:15,18:45,18:55,19:05,19:30
+FONO|L a V|-,-,-,-,-,-,18:30,-,-,-,-
+FONO|L a V|16:45,17:50,-,18:10,18:20,-,18:30,18:35,18:40,-,-
+INTER|L a V|16:55,-,-,18:00,18:10,-,18:20,-,-,-,-
+INTER|L a V|17:00,18:05,-,18:25,18:35,-,18:40,-,-,-,-
+FONO|L a V|17:15,18:20,-,18:40,18:50,-,19:00,-,-,-,-
+INTER|L a V|17:30,18:35,-,18:55,19:05,-,19:10,-,-,-,-
+FONO|L a V|17:45,18:50,-,19:10,19:20,-,19:30,-,-,-,-
+INTER|L a V|18:00,19:05,-,19:25,19:35,-,19:40,-,-,-,-
+INTER|L a V|-,-,-,-,-,19:40,19:50,-,-,-,-
+MI BUS|L a V|18:10,-,-,19:10,-,-,19:25,19:40,-,-,-
+FONO|L a V|-,-,-,-,-,-,19:30,19:45,19:55,20:05,20:30
+FONO|L a V|18:20,-,-,-,-,-,20:05,-,-,-,-
+INTER|L a V|18:40,19:25,-,19:45,19:55,-,20:20,-,-,-,-
+FONO|L a V|19:00,19:45,-,20:05,20:15,-,20:45,20:30,-,-,-
+MI BUS|L a V|19:00,20:05,-,20:25,20:35,-,20:15,-,-,-,-
+FONO|L a V|-,-,-,20:00,-,-,21:00,21:15,21:25,21:35,22:00
+INTER|L a V|19:20,20:25,-,20:45,20:55,-,21:00,-,-,-,-
+FONO|L a V|19:40,20:45,-,21:05,21:15,-,21:25,-,-,-,-
+MI BUS|L a V|19:55,-,-,20:55,-,-,21:10,21:25,-,-,-
+FONO|L a V|20:00,21:05,-,21:25,21:35,-,21:45,-,-,-,-
+INTER|L a V|20:20,21:25,-,21:45,21:55,-,22:00,-,-,-,-
+INTER|L a V|20:40,21:40,21:45,-,-,-,-,-,-,-,-
+FONO|L a V|21:00,22:05,-,22:25,22:35,-,22:45,-,-,-,-
+INTER|L a V|21:30,22:30,-,22:45,22:55,-,23:00,-,-,-,-
+FONO|L a V|22:00,23:05,-,23:25,23:35,-,23:45,-,-,-,-
+INTER|L a V|22:30,23:30,-,23:45,23:55,-,00:00,-,-,-,-
+FONO|L a V|23:00,00:05,-,00:25,00:35,-,00:45,-,-,-,-
+FONO|L a V|00:15,01:20,-,01:40,01:50,-,02:00,-,-,-,-`),vuelta:P(`
+FONO|L a V|-,-,04:20,04:30,04:45,-,04:55,05:05,-,05:25,06:30
+FONO|L a V|-,-,-,-,05:15,-,05:25,05:35,-,05:55,07:00
+INTER|L a V|-,-,-,05:15,05:30,-,05:40,05:50,-,-,06:50
+INTER|L a V|-,-,-,-,05:30,-,05:40,05:50,-,06:10,07:10
+FONO|L a V|-,-,-,-,05:45,-,05:55,06:05,-,06:25,07:30
+MI BUS|L a V|-,-,-,05:40,05:55,-,-,06:10,-,-,07:10
+FONO|L a V|-,-,-,-,06:00,-,06:10,06:20,-,06:40,07:45
+FONO|L a V|-,-,-,-,06:15,-,06:25,06:35,-,06:55,08:00
+INTER|L a V|-,-,-,06:15,06:30,-,06:40,06:50,-,07:10,08:10
+MI BUS|L a V|-,-,-,-,06:30,-,-,06:45,-,-,07:45
+INTER|L a V|-,-,-,-,06:45,-,06:55,07:05,-,07:25,08:25
+FONO|L a V|-,-,-,-,07:00,-,07:10,07:20,-,07:40,08:45
+INTER|L a V|-,-,-,-,07:15,-,07:25,07:35,-,07:55,08:55
+FONO|L a V|-,-,-,-,07:30,-,07:40,07:50,-,08:10,09:15
+INTER|L a V|-,-,-,07:20,07:35,07:50,-,-,-,-,-
+MI BUS|L a V|-,-,-,07:20,07:35,-,-,07:50,-,-,08:50
+INTER|L a V|-,-,-,07:30,07:45,-,07:55,08:05,-,08:25,09:25
+INTER|L a V|07:00,07:20,07:30,07:45,08:00,-,08:10,08:20,-,08:40,09:40
+FONO|L a V|-,-,-,-,08:20,-,08:30,08:40,-,09:00,10:05
+FONO|L a V|-,-,-,08:15,08:30,-,08:40,08:50,-,-,09:50
+FONO|L a V|-,-,-,-,08:40,-,08:50,09:00,-,09:20,10:25
+INTER|L a V|08:00,08:20,08:30,08:45,09:00,-,09:10,09:20,-,09:40,10:40
+FONO|L a V|08:30,08:55,09:05,09:15,09:30,-,-,-,-,-,-
+FONO|L a V|-,-,-,-,09:20,-,09:30,09:40,-,10:00,11:05
+INTER|L a V|-,-,-,-,09:30,-,09:40,09:50,-,10:10,-
+INTER|L a V|-,-,-,-,09:40,-,09:50,10:00,-,10:20,11:20
+MI BUS|L a V|-,-,-,09:30,09:45,-,-,10:00,-,-,11:00
+FONO|L a V|-,-,-,-,10:00,-,10:10,10:20,-,10:40,11:45
+INTER|L a V|-,-,-,-,10:20,-,10:30,10:40,-,11:00,12:00
+FONO|L a V|-,-,-,10:30,10:40,-,10:50,11:00,-,11:20,12:25
+INTER|L a V|10:00,10:25,10:35,10:45,11:00,-,11:10,11:20,-,11:40,12:40
+FONO|L a V|-,-,-,-,11:20,-,11:30,11:40,-,12:00,13:05
+FONO|L a V|-,-,11:15,11:30,11:45,-,11:55,12:05,-,12:25,13:30
+FONO|L a V|11:00,11:25,11:35,11:45,12:00,-,-,-,-,-,-
+INTER|L a V|-,-,-,-,12:00,-,12:10,12:20,-,12:40,13:40
+FONO|L a V|-,-,-,12:05,12:20,-,12:30,12:40,-,13:00,14:05
+FONO|L a V|-,-,-,-,12:40,-,12:50,13:00,-,13:20,14:25
+FONO|L a V|-,-,-,-,13:00,13:20,13:10,13:20,-,13:40,14:45
+INTER|L a V|-,-,-,-,13:05,-,-,-,-,-,-
+INTER|L a V|12:10,12:30,12:40,12:55,13:10,-,-,-,-,-,-
+MI BUS|L a V|-,-,-,12:55,13:10,-,-,13:25,-,-,14:25
+INTER|L a V|-,-,12:55,13:05,13:20,-,13:30,13:40,-,14:00,15:00
+FONO|L a V|-,-,-,-,13:35,-,13:45,13:55,-,14:15,15:20
+INTER|L a V|-,-,-,-,13:45,-,13:55,14:05,-,14:25,15:25
+FONO|L a V|13:10,13:35,13:45,13:55,14:10,-,-,-,-,-,-
+FONO|L a V|-,-,-,-,14:00,-,14:10,14:20,-,14:40,15:45
+MI BUS|L a V|-,-,-,14:00,14:15,-,-,14:30,-,-,15:30
+INTER|L a V|-,-,-,-,14:20,-,14:30,14:40,-,15:00,16:00
+FONO|L a V|-,-,-,-,14:40,-,14:50,15:00,-,15:20,16:25
+INTER|L a V|-,-,-,14:45,15:00,-,15:10,15:20,-,15:40,16:40
+FONO|L a V|14:00,14:25,14:35,14:45,15:00,-,-,-,-,-,-
+FONO|L a V|-,-,-,-,15:15,-,15:25,15:35,-,15:55,17:00
+INTER|L a V|-,-,-,15:15,15:30,-,15:40,15:50,-,16:10,17:10
+FONO|L a V|-,-,-,-,15:45,-,15:55,16:05,-,16:25,17:30
+FONO|L a V|-,-,-,-,16:00,-,16:10,16:20,-,16:40,17:45
+INTER|L a V|-,-,-,16:00,16:15,-,16:25,16:35,-,16:55,17:55
+MI BUS|L a V|-,-,-,16:00,16:15,-,-,16:30,-,-,17:30
+FONO|L a V|-,-,-,-,16:30,-,16:40,16:50,-,17:10,18:15
+INTER|L a V|-,-,-,-,16:45,-,16:55,17:05,-,17:25,18:25
+FONO|L a V|-,-,-,16:45,17:00,-,17:10,17:20,-,17:40,18:45
+FONO|L a V|16:15,16:40,16:50,17:00,17:15,-,-,-,-,-,-
+INTER|L a V|-,-,-,-,17:15,-,17:25,17:35,-,17:55,18:55
+FONO|L a V|-,-,-,-,17:40,-,17:50,18:00,-,18:20,19:25
+INTER|L a V|-,-,17:30,17:45,17:50,-,18:00,18:10,-,18:30,19:30
+INTER|L a V|-,-,17:50,18:00,18:00,-,18:10,18:20,-,18:40,19:45
+FONO|L a V|17:15,17:40,-,-,18:15,-,-,-,-,-,-
+INTER|L a V|-,-,-,18:10,18:20,-,18:30,18:40,-,19:00,20:00
+MI BUS|L a V|-,-,-,-,18:25,-,-,18:40,-,-,19:40
+FONO|L a V|-,-,-,-,18:40,-,18:50,19:00,-,19:20,20:25
+INTER|L a V|-,-,18:50,19:00,19:00,-,19:10,19:20,-,19:40,-
+INTER|L a V|-,-,-,-,19:15,-,-,-,-,-,-
+FONO|L a V|-,-,19:05,19:15,19:20,19:40,19:30,19:40,-,20:00,21:05
+FONO|L a V|18:30,18:55,-,-,19:30,-,-,-,-,-,-
+INTER|L a V|-,-,-,-,19:30,-,-,-,-,-,-
+INTER|L a V|-,-,-,-,19:40,-,19:50,20:00,-,20:20,21:20
+FONO|L a V|-,-,-,-,20:15,-,20:25,20:35,-,20:55,22:00
+FONO|L a V|19:30,19:55,20:05,20:15,20:30,-,-,-,-,-,-
+INTER|L a V|-,-,-,-,20:45,-,20:55,21:05,-,21:25,22:25
+MI BUS|L a V|-,-,-,21:00,21:15,-,-,21:30,-,-,22:30
+FONO|L a V|20:30,20:55,21:05,21:15,21:30,-,-,-,-,-,-
+FONO|L a V|-,-,-,-,22:00,-,22:10,22:20,-,22:40,23:45
+FONO|L a V|22:00,22:25,22:35,22:45,23:00,-,-,-,-,-,-
+FONO|L a V|-,-,-,-,23:00,-,23:10,23:20,-,23:40,00:45`)},
+F:{ida:P(`
+INTER|S,D y F|05:30,06:30,-,06:50,07:00,-,07:10,-,-,-,-
+FONO|S,D y F|06:00,07:00,-,07:20,07:30,-,07:40,07:55,08:05,08:15,08:40
+FONO|S,D y F|06:45,07:45,-,08:05,08:15,-,08:25,-,-,-,-
+INTER|S,D y F|07:30,08:30,-,08:50,09:00,-,09:10,-,-,-,-
+INTER|S,D y F|-,-,-,-,-,-,09:10,09:25,09:35,09:45,10:10
+FONO|S,D y F|08:00,09:00,-,09:20,09:30,-,09:40,-,-,-,-
+MI BUS|S,D y F|08:15,-,-,09:15,-,-,09:30,09:45,-,-,-
+FONO|S,D y F|-,-,-,-,-,-,10:00,10:15,10:25,10:35,11:00
+INTER|S,D y F|08:30,09:30,-,09:50,10:00,-,10:10,-,-,-,-
+FONO|S,D y F|09:00,10:00,-,10:20,10:30,-,10:40,-,-,-,-
+FONO|S,D y F|09:30,10:30,-,10:50,11:00,-,11:10,-,-,-,-
+INTER|S,D y F|10:00,11:00,-,11:20,11:30,-,11:40,-,-,-,-
+FONO|S,D y F|10:30,11:30,-,11:50,12:00,-,12:10,-,-,-,-
+FONO|S,D y F|11:00,12:00,-,12:20,12:30,-,12:40,-,-,-,-
+INTER|S,D y F|11:30,12:30,-,12:50,13:00,-,13:10,13:25,13:35,13:45,14:10
+INTER|S,D y F|-,-,-,-,-,-,13:10,-,-,-,-
+FONO|S,D y F|12:00,13:00,-,13:20,13:30,-,13:40,13:50,-,-,-
+MI BUS|S,D y F|12:20,-,-,13:20,-,-,13:35,14:30,14:40,14:50,15:15
+FONO|S,D y F|-,-,-,-,-,-,14:15,-,-,-,-
+INTER|S,D y F|12:45,13:45,-,14:05,14:15,-,14:25,-,-,-,-
+INTER|S,D y F|13:20,14:20,-,14:40,14:50,-,15:00,15:15,-,-,-
+MI BUS|S,D y F|13:45,-,-,14:45,-,-,15:00,-,-,-,-
+FONO|S,D y F|14:10,15:10,-,15:30,15:40,-,15:50,-,-,-,-
+FONO|S,D y F|-,-,-,-,-,-,16:15,16:30,16:40,16:50,17:15
+INTER|S,D y F|14:40,15:40,-,16:00,16:10,-,16:20,-,-,-,-
+FONO|S,D y F|15:20,16:20,-,16:40,16:50,-,17:00,-,-,-,-
+FONO|S,D y F|16:00,17:00,-,17:20,17:30,-,17:40,-,-,-,-
+MI BUS|S,D y F|16:30,-,-,17:30,-,-,17:45,18:00,-,-,-
+INTER|S,D y F|16:30,17:30,-,17:50,18:00,-,18:10,-,-,-,-
+FONO|S,D y F|-,-,-,-,-,-,18:20,18:35,18:45,18:55,19:20
+FONO|S,D y F|17:00,18:00,-,18:20,18:30,-,18:40,-,-,-,-
+INTER|S,D y F|17:30,18:30,-,18:50,19:00,-,19:10,-,-,-,-
+MI BUS|S,D y F|18:00,-,-,19:00,-,-,19:15,19:30,-,-,-
+FONO|S,D y F|18:00,19:00,-,19:20,19:30,-,19:40,-,-,-,-
+FONO|S,D y F|18:20,19:20,-,19:40,19:50,-,20:00,-,-,-,-
+FONO|S,D y F|-,-,-,-,-,-,20:20,20:35,20:45,20:55,21:20
+INTER|S,D y F|18:40,19:40,-,20:00,20:10,-,20:20,-,-,-,-
+INTER|S,D y F|19:00,20:00,-,20:20,20:30,-,20:40,-,-,-,-
+FONO|S,D y F|19:30,20:30,-,20:50,21:00,-,21:10,-,-,-,-
+FONO|S,D y F|20:00,21:00,-,21:20,21:30,-,21:40,-,-,-,-
+MI BUS|S,D y F|20:15,-,-,21:15,-,-,21:30,21:45,-,-,-
+INTER|S,D y F|20:30,21:30,-,21:50,22:00,-,22:10,-,-,-,-
+FONO|S,D y F|21:00,22:00,-,22:20,22:30,-,22:40,-,-,-,-
+INTER|S,D y F|21:30,22:30,-,22:50,23:00,-,23:10,-,-,-,-
+FONO|S,D y F|22:00,23:00,-,23:20,23:30,-,23:40,-,-,-,-
+INTER|S,D y F|22:30,23:30,-,23:50,00:00,-,00:10,-,-,-,-
+FONO|S,D y F|23:00,00:00,-,00:20,00:30,-,00:40,-,-,-,-
+FONO|S,D y F|00:00,01:00,-,01:20,01:30,-,01:40,-,-,-,-`),vuelta:P(`
+FONO|S,D y F|-,-,04:20,04:30,04:45,-,04:55,05:05,-,05:25,06:25
+INTER|S,D y F|-,-,-,-,05:30,-,05:40,05:50,-,06:10,07:10
+FONO|S,D y F|-,-,-,-,06:00,-,06:10,06:20,-,06:40,07:40
+MI BUS|L a V|-,-,-,06:00,06:15,-,-,06:30,-,-,07:30
+INTER|S,D y F|-,-,-,-,06:30,-,06:40,06:50,-,07:10,08:10
+FONO|S,D y F|-,-,-,-,07:00,-,07:10,07:20,-,07:40,08:40
+MI BUS|L a V|-,-,-,07:00,07:15,-,-,07:30,-,-,08:30
+INTER|S,D y F|-,-,-,-,07:30,-,07:40,07:50,-,08:10,09:10
+FONO|S,D y F|-,-,-,-,08:00,-,08:10,08:20,-,08:40,09:40
+INTER|SABADO|07:00,07:25,07:35,07:45,08:00,-,-,-,-,-,-
+INTER|S,D y F|-,-,-,-,08:30,-,08:40,08:50,-,09:10,10:10
+FONO|S,D y F|-,-,-,-,09:00,-,09:10,09:20,-,09:40,10:40
+INTER|S,D y F|-,-,-,-,09:30,-,09:40,09:50,-,10:10,11:10
+FONO|S,D y F|08:40,09:05,09:15,09:25,09:40,-,-,-,-,-,-
+FONO|S,D y F|-,-,-,-,10:00,-,10:10,10:20,-,10:40,11:40
+MI BUS|L a V|-,-,-,10:00,10:15,-,-,10:30,-,-,11:30
+INTER|S,D y F|-,-,-,-,10:30,-,10:40,10:50,-,11:10,12:10
+FONO|S,D y F|-,-,-,-,11:00,-,11:10,11:20,-,11:40,12:40
+INTER|D. y FER|10:10,10:35,10:45,10:55,11:10,-,-,-,-,-,-
+INTER|S,D y F|-,-,-,-,11:25,-,11:35,11:45,-,12:05,13:05
+FONO|S,D y F|11:00,11:25,11:35,11:45,12:00,-,-,-,-,-,-
+FONO|S,D y F|-,-,-,-,12:00,-,12:10,12:20,-,12:40,13:40
+MI BUS|L a V|-,-,-,12:00,12:15,-,-,12:30,-,-,13:30
+INTER|S,D y F|-,-,-,-,12:30,-,12:40,12:50,-,13:10,14:10
+INTER|SABADO|12:00,12:25,12:35,12:45,13:00,-,-,-,-,-,-
+FONO|S,D y F|-,-,-,-,13:00,-,13:10,13:20,-,13:40,14:40
+INTER|S,D y F|-,-,-,-,13:30,-,13:40,13:50,-,14:10,15:10
+FONO|S,D y F|-,-,-,-,14:00,-,14:10,14:20,-,14:40,15:40
+MI BUS|L a V|-,-,-,14:15,14:30,-,-,14:45,-,-,15:45
+INTER|S,D y F|-,-,-,-,15:00,-,15:10,15:20,-,15:40,16:40
+FONO|S,D y F|-,-,-,-,15:30,-,15:40,15:50,-,16:10,17:10
+FONO|S,D y F|-,-,-,-,16:00,-,16:10,16:20,-,16:40,17:40
+FONO|S,D y F|15:05,15:30,15:40,15:50,16:05,-,-,-,-,-,-
+MI BUS|L a V|-,-,-,16:00,16:15,-,-,16:30,-,-,17:30
+INTER|S,D y F|-,-,-,-,16:30,-,16:40,16:50,-,17:10,18:10
+INTER|S,D y F|-,-,-,-,17:00,-,17:10,17:20,-,17:40,18:40
+FONO|S,D y F|-,-,-,-,17:30,-,17:40,17:50,-,18:10,19:10
+FONO|S,D y F|-,-,-,-,18:00,-,18:10,18:20,-,18:40,19:40
+FONO|S,D y F|17:15,17:40,17:50,18:00,18:15,-,-,-,-,-,-
+INTER|S,D y F|-,-,-,-,18:30,-,18:40,18:50,-,19:10,20:10
+MI BUS|L a V|-,-,-,18:30,18:45,-,-,19:00,-,-,20:00
+FONO|S,D y F|-,-,-,-,19:00,-,19:10,19:20,-,19:40,20:40
+INTER|S,D y F|-,-,-,-,19:30,-,19:40,19:50,-,20:10,21:10
+FONO|S,D y F|-,-,-,-,20:00,-,20:10,20:20,-,20:40,21:40
+MI BUS|L a V|-,-,-,20:00,20:15,-,-,20:30,-,-,21:30
+FONO|S,D y F|19:20,19:45,19:55,20:05,20:20,-,-,-,-,-,-
+INTER|S,D y F|-,-,-,-,20:30,-,20:40,20:50,-,21:10,22:10
+FONO|S,D y F|-,-,-,-,21:00,-,21:10,21:20,-,21:40,22:40
+INTER|S,D y F|-,-,-,-,21:30,-,21:40,21:50,-,22:10,23:10
+FONO|S,D y F|21:20,21:45,21:55,22:05,22:20,-,-,-,-,-,-
+FONO|S,D y F|-,-,-,21:50,22:00,-,22:10,22:20,-,22:40,23:40`)}};
+const TZ = 'America/Argentina/Buenos_Aires';
+const $ = id => document.getElementById(id);
+const nice = s => s.split(' ').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
+const stops = D.ida;
+let day = 'H', emp = '*', showAll = false;
+
+function nowBA(){
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-GB',{timeZone:TZ,weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()).map(x=>[x.type,x.value]));
+  return {wd:p.weekday, hm:p.hour.replace('24','00')+':'+p.minute};
+}
+function setDay(d){ if(d!==day) {} day=d; $('dH').setAttribute('aria-pressed',d==='H'); $('dS').setAttribute('aria-pressed',d==='S'); $('dD').setAttribute('aria-pressed',d==='D'); render(); }
+let live=true;
+function useNow(){ live=true; const n=nowBA(); $('hora').value=n.hm; day=n.wd==='Sat'?'S':n.wd==='Sun'?'D':'H'; setDay(day); $('livetxt').textContent='Con la hora de ahora ('+n.hm+'). Se actualiza sola.'; }
+setInterval(()=>{ if(live) useNow(); },30000);
+
+for (const s of stops){ for (const id of ['orig','dest']){ const o=document.createElement('option'); o.value=s; o.textContent=nice(s); $(id).appendChild(o); } }
+$('orig').value='AGUA DE ORO'; $('dest').value='CORDOBA';
+
+const mins = t => +t.slice(0,2)*60 + +t.slice(3,5);
+const cls = e => e.replace(' ','');
+const chip = e => `<span class="chip ${cls(e)}">${e}</span>`;
+
+function services(o,d){
+  const dir = stops.indexOf(o) < stops.indexOf(d) ? 'ida' : 'vuelta';
+  const names = D[dir], io = names.indexOf(o), id = names.indexOf(d);
+  return D[day==='H'?'H':'F'][dir].filter(r => day==='H' || (day==='S' ? r.d!=='D. y FER' : r.d!=='SABADO')).filter(r => r.t[io] && r.t[id]).map(r => ({e:r.e, dep:r.t[io], arr:r.t[id], lv: day!=='H' && r.d==='L a V'})).sort((a,b)=>mins(a.dep)-mins(b.dep));
+}
+
+function render(){
+  const o=$('orig').value, d=$('dest').value, res=$('res');
+  if (o===d){ res.innerHTML='<div class="panel"><p class="empty">Elegí un destino distinto del origen.</p></div>'; return; }
+  const all0 = services(o,d), all = emp==='*' ? all0 : all0.filter(s=>s.e===emp);
+  $('todos').hidden = !all.length;
+  if (!all.length){ res.innerHTML='<div class="panel"><p class="empty">'+(all0.length ? 'Esa empresa no tiene servicios entre estas dos localidades en este tipo de día.' : 'Ningún servicio une estas dos localidades en este tipo de día.')+'</p></div>'; return; }
+  const h = $('hora').value || '00:00', t0 = mins(h);
+  let list = all.filter(s => mins(s.dep) >= t0), wrapped = false;
+  if (!list.length){ list = all; wrapped = true; }
+  const n = list[0], wait = mins(n.dep)-t0;
+  const waitTxt = wrapped ? 'Ya no hay más servicios este día' : (wait===0 ? 'Sale ahora' : wait<60 ? `Sale en ${wait} min` : `Sale en ${Math.floor(wait/60)} h ${wait%60} min`);
+  const rest = list.slice(1,6);
+  $('todos').textContent = showAll ? 'Ocultar la lista completa' : 'Ver todos los horarios ('+all.length+')';
+  const full = showAll ? `<div class="panel"><span class="lbl">Todos los horarios · ${nice(o)} → ${nice(d)}</span><div class="list">${all.map(s=>`
+      <div class="item${!wrapped && mins(s.dep)<t0 ? ' past':''}"><span class="t">${s.dep}</span>${chip(s.e)}<span class="a">llega ${s.arr}${s.lv?' · figura L a V':''}</span></div>`).join('')}</div></div>` : '';
+  res.innerHTML = `
+    <div class="next">
+      <span class="lbl">${wrapped ? 'Primer servicio del día' : 'Próximo servicio'}</span>
+      <div class="big">${n.dep}</div>
+      <div class="meta">${chip(n.e)}<span>${nice(o)} → ${nice(d)}</span>${n.lv?'<span>(figura "L a V" en la grilla)</span>':''}</div>
+      <div class="meta"><span>Llega ${n.arr}</span><span>·</span><span>${waitTxt}</span></div>
+    </div>
+    ${rest.length ? `<div class="panel"><span class="lbl">Siguientes</span><div class="list">${rest.map(s=>`
+      <div class="item"><span class="t">${s.dep}</span>${chip(s.e)}<span class="a">llega ${s.arr}${s.lv?' · figura L a V':''}</span></div>`).join('')}</div></div>` : ''}
+    ${full}`;
+}
+
+$('orig').onchange=$('dest').onchange=render;
+$('hora').oninput=()=>{ live=false; $('livetxt').textContent='Hora elegida a mano. Tocá "Próximo ya" para volver a la hora de ahora.'; render(); };
+$('swap').onclick=()=>{const a=$('orig').value;$('orig').value=$('dest').value;$('dest').value=a;render();};
+$('dH').onclick=()=>setDay('H'); $('dS').onclick=()=>setDay('S'); $('dD').onclick=()=>setDay('D');
+$('ahora').onclick=useNow;
+const F={f0:'*',fI:'INTER',fF:'FONO',fM:'MI BUS'};
+for (const id in F) $(id).onclick=()=>{ emp=F[id]; for (const k in F) $(k).setAttribute('aria-pressed',k===id); render(); };
+$('todos').onclick=()=>{ showAll=!showAll; render(); };
+useNow();
+</script>
+</body></html>
