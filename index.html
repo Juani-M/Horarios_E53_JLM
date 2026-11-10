@@ -72,6 +72,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 .go:active{transform:translateY(1px);box-shadow:none}
 .go svg{width:34px;height:34px;flex:none}
 .note{color:var(--muted);font-size:13px}
+.fare{font-weight:700;font-size:20px}
 .item.past{opacity:.4}
 .all{font:inherit;font-size:16px;font-weight:600;width:100%;padding:12px;background:var(--surface);color:var(--fg);border:2px solid var(--ink);border-radius:10px;cursor:pointer}
 </style>
@@ -115,7 +116,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 
   <section id="res" aria-live="polite" style="display:flex;flex-direction:column;gap:16px"></section>
   <button class="all" id="todos" type="button" hidden>Ver todos los horarios</button>
-  <p class="note">El tipo de día se detecta solo (hábil, sábado, domingo o feriado nacional). Podés cambiarlo a mano. Horarios de paso por cada localidad según la grilla coordinada.</p>
+  <p class="note">El tipo de día se detecta solo (hábil, sábado, domingo o feriado nacional). Podés cambiarlo a mano. Tarifa interurbana vigente desde 01/10/2026, igual para las tres empresas. Horarios de paso por cada localidad según la grilla coordinada.</p>
 </main>
 
 <script>
@@ -390,6 +391,10 @@ FONO|S,D y F|-,-,-,-,21:00,-,21:10,21:20,-,21:40,22:40
 INTER|S,D y F|-,-,-,-,21:30,-,21:40,21:50,-,22:10,23:10
 FONO|S,D y F|21:20,21:45,21:55,22:05,22:20,-,-,-,-,-,-
 FONO|S,D y F|-,-,-,21:50,22:00,-,22:10,22:20,-,22:40,23:40`)}};
+// Tarifa interurbana vigente desde 01/10/2026 (igual para las tres empresas). Clave: los dos nombres ordenados alfabéticamente.
+const TAR={"AGUA DE ORO|ASCOCHINGA":3560,"AGUA DE ORO|CERRO AZUL":2400,"AGUA DE ORO|CORDOBA":8900,"AGUA DE ORO|EL PUEBLITO":3130,"AGUA DE ORO|JESUS MARIA":7000,"AGUA DE ORO|LA GRANJA":3270,"AGUA DE ORO|LA PAMPA":5260,"AGUA DE ORO|RIO CEBALLOS":4540,"AGUA DE ORO|SALSIPUEDES":3130,"ASCOCHINGA|CERRO AZUL":4830,"ASCOCHINGA|CORDOBA":11650,"ASCOCHINGA|EL PUEBLITO":5680,"ASCOCHINGA|JESUS MARIA":3560,"ASCOCHINGA|LA GRANJA":2400,"ASCOCHINGA|LA PAMPA":2400,"ASCOCHINGA|RIO CEBALLOS":6960,"ASCOCHINGA|SALSIPUEDES":5680,"CERRO AZUL|CORDOBA":10220,"CERRO AZUL|EL PUEBLITO":3690,"CERRO AZUL|JESUS MARIA":7520,"CERRO AZUL|LA GRANJA":4830,"CERRO AZUL|LA PAMPA":5680,"CERRO AZUL|RIO CEBALLOS":5680,"CERRO AZUL|SALSIPUEDES":3690,"CORDOBA|EL PUEBLITO":7000,"CORDOBA|JESUS MARIA":15610,"CORDOBA|LA GRANJA":10400,"CORDOBA|LA PAMPA":13770,"CORDOBA|LA QUEBRADA":5680,"CORDOBA|RIO CEBALLOS":5000,"CORDOBA|SALSIPUEDES":7000,"EL PUEBLITO|JESUS MARIA":8810,"EL PUEBLITO|LA GRANJA":4540,"EL PUEBLITO|LA PAMPA":6820,"EL PUEBLITO|RIO CEBALLOS":2400,"EL PUEBLITO|SALSIPUEDES":2400,"JESUS MARIA|LA GRANJA":4540,"JESUS MARIA|LA PAMPA":3560,"JESUS MARIA|RIO CEBALLOS":10380,"JESUS MARIA|SALSIPUEDES":8810,"LA GRANJA|LA PAMPA":3130,"LA GRANJA|RIO CEBALLOS":6820,"LA GRANJA|SALSIPUEDES":4540,"LA PAMPA|RIO CEBALLOS":9380,"LA PAMPA|SALSIPUEDES":6820,"LA QUEBRADA|RIO CEBALLOS":2400,"RIO CEBALLOS|SALSIPUEDES":2400};
+function fareOf(o,d){ const v=TAR[[o,d].sort().join('|')]; return v==null?null:v; }
+function fareLine(o,d){ const v=fareOf(o,d); return v==null?'':`<div class="meta fare"><span>Tarifa $ ${v.toLocaleString('es-AR')}</span></div>`; }
 const TZ = 'America/Argentina/Buenos_Aires';
 const $ = id => document.getElementById(id);
 const nice = s => s.split(' ').map(w => w[0] + w.slice(1).toLowerCase()).join(' ');
@@ -445,6 +450,7 @@ function render(){
       <div class="big">${n.dep}</div>
       <div class="meta">${chip(n.e)}<span>${nice(o)} → ${nice(d)}</span>${n.lv?'<span>(figura "L a V" en la grilla)</span>':''}</div>
       <div class="meta"><span>Llega ${n.arr}</span><span>·</span><span>${waitTxt}</span></div>
+      ${fareLine(o,d)}
     </div>
     ${rest.length ? `<div class="panel"><span class="lbl">Siguientes</span><div class="list">${rest.map(s=>`
       <div class="item"><span class="t">${s.dep}</span>${chip(s.e)}<span class="a">llega ${s.arr}${s.lv?' · figura L a V':''}</span></div>`).join('')}</div></div>` : ''}
