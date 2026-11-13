@@ -73,6 +73,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 .go svg{width:34px;height:34px;flex:none}
 .note{color:var(--muted);font-size:13px}
 .fare{font-weight:700;font-size:20px}
+.promo{display:block;width:100%;height:auto;border-radius:8px;margin-top:8px}
 .item.past{opacity:.4}
 .all{font:inherit;font-size:16px;font-weight:600;width:100%;padding:12px;background:var(--surface);color:var(--fg);border:2px solid var(--ink);border-radius:10px;cursor:pointer}
 </style>
@@ -451,6 +452,7 @@ function render(){
       <div class="meta">${chip(n.e)}<span>${nice(o)} → ${nice(d)}</span>${n.lv?'<span>(figura "L a V" en la grilla)</span>':''}</div>
       <div class="meta"><span>Llega ${n.arr}</span><span>·</span><span>${waitTxt}</span></div>
       ${fareLine(o,d)}
+      <img class="promo" src="tin-digital.png" width="812" height="732" alt="TIN Digital. Movilidad en evolución. Tu tarjeta TIN ahora vive en el celular: cargá saldo en segundos, pagá tu viaje con QR, seguí cada movimiento y gestioná tus abonos desde una sola app.">
     </div>
     ${rest.length ? `<div class="panel"><span class="lbl">Siguientes</span><div class="list">${rest.map(s=>`
       <div class="item"><span class="t">${s.dep}</span>${chip(s.e)}<span class="a">llega ${s.arr}${s.lv?' · figura L a V':''}</span></div>`).join('')}</div></div>` : ''}
