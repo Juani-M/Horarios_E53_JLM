@@ -73,6 +73,7 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 .go svg{width:34px;height:34px;flex:none}
 .note{color:var(--muted);font-size:13px}
 .fare{font-weight:700;font-size:20px}
+.share{font:inherit;font-size:16px;font-weight:600;width:100%;padding:12px;background:var(--ink);color:var(--ink-fg);border:0;border-radius:10px;cursor:pointer}
 .promo{display:block;width:100%;height:auto;border-radius:8px;margin-top:8px}
 .item.past{opacity:.4}
 .all{font:inherit;font-size:16px;font-weight:600;width:100%;padding:12px;background:var(--surface);color:var(--fg);border:2px solid var(--ink);border-radius:10px;cursor:pointer}
@@ -117,6 +118,8 @@ select:focus-visible,input:focus-visible,button:focus-visible{outline:3px solid 
 
   <section id="res" aria-live="polite" style="display:flex;flex-direction:column;gap:16px"></section>
   <button class="all" id="todos" type="button" hidden>Ver todos los horarios</button>
+  <button class="share" id="share" type="button">Compartir la app</button>
+  <span class="note" id="sharemsg" role="status"></span>
   <p class="note">El tipo de día se detecta solo (hábil, sábado, domingo o feriado nacional). Podés cambiarlo a mano. Tarifa interurbana vigente desde 01/10/2026, igual para las tres empresas. Horarios de paso por cada localidad según la grilla coordinada.</p>
 </main>
 
@@ -467,6 +470,13 @@ $('dH').onclick=manual('H'); $('dS').onclick=manual('S'); $('dD').onclick=manual
 $('ahora').onclick=useNow;
 const F={f0:'*',fI:'INTER',fF:'FONO',fM:'MI BUS'};
 for (const id in F) $(id).onclick=()=>{ emp=F[id]; for (const k in F) $(k).setAttribute('aria-pressed',k===id); render(); };
+const SHARE={title:'Horarios E-53',text:'Horarios E-53: consultá el próximo colectivo, la empresa y la tarifa de tu tramo 🚌',url:'https://horariose53.vercel.app'};
+$('share').onclick=async()=>{
+  try{ if(navigator.share){ await navigator.share(SHARE); return; } }catch(e){ if(e&&e.name==='AbortError') return; }
+  const msg=SHARE.text+'\n'+SHARE.url;
+  try{ await navigator.clipboard.writeText(msg); $('sharemsg').textContent='Mensaje copiado. Pegalo donde quieras.'; }
+  catch(e){ window.open('https://wa.me/?text='+encodeURIComponent(msg),'_blank'); }
+};
 $('todos').onclick=()=>{ showAll=!showAll; render(); };
 useNow();
 </script>
